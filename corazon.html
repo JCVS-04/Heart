@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Heart Animation</title>
+  <style>
+    /* Quita márgenes y oculta barras de desplazamiento para pantalla completa */
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- Definimos un canvas de 1200x700 (igual que la geometría de tu ventana tkinter) -->
+  <canvas id="canvas" width="1200" height="700"></canvas>
+
+  <script>
+    // Obtiene el canvas y su contexto de dibujo 2D
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Arreglo de 200 "objetos" con posición inicial
+    const totalObjects = 200;
+    const objects = [];
+    for (let i = 0; i < totalObjects; i++) {
+      // Inicialmente los objetos se ubican en (500, 250)
+      objects.push({ x: 500, y: 250, color: "#fff", char: '☆' });
+    }
+
+    // Variables para controlar el objeto actual y el carácter que se muestra
+    let num = 0;
+    let currentChar = '☆';
+    const chars = ['➤', '♥', '☆', '◉', '➹', '☼', '❋', '☺', '♪'];
+
+    // Función que actualiza la animación cada 100 ms
+    function update() {
+      // Se realizan 200 actualizaciones (una por objeto, en orden)
+      for (let t = 0; t < totalObjects; t++) {
+        // Calcula el desplazamiento usando las fórmulas de la “corazón”
+        const xp = -1 * Math.floor(16 * Math.pow(Math.sin(t), 3));
+        const yp = -1 * Math.floor(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+
+        // Genera un color aleatorio con rojo y azul entre 100 y 255, y verde en 0
+        const r = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
+        const b = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
+        const color = `rgb(${r},0,${b})`;
+
+        // Actualiza el objeto actual (se le suma el desplazamiento)
+        objects[num].x += xp;
+        objects[num].y += yp;
+        objects[num].color = color;
+        objects[num].char = currentChar;
+
+        // Si la posición X del objeto supera 800, se reinician todos los objetos
+        if (objects[num].x >= 800) {
+          // Cambia el carácter actual aleatoriamente de la lista
+          currentChar = chars[Math.floor(Math.random() * chars.length)];
+          // Reinicia la posición de todos los objetos a (520, 270)
+          for (let s = 0; s < totalObjects; s++) {
+            objects[s].x = 520;
+            objects[s].y = 270;
+          }
+        }
+
+        // Pasa al siguiente objeto (ciclo circular)
+        num = (num + 1) % totalObjects;
+      }
+
+      // Redibuja el canvas
+      drawObjects();
+
+      // Programa la siguiente actualización dentro de 100 ms
+      setTimeout(update, 100);
+    }
+
+    // Función para dibujar todos los objetos en el canvas
+    function drawObjects() {
+      // Limpia el canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Dibuja el fondo negro
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Configura la fuente para el texto
+      ctx.font = "24px Arial";
+
+      // Dibuja cada objeto (texto) en su posición, con su color y carácter
+      for (let i = 0; i < totalObjects; i++) {
+        const obj = objects[i];
+        ctx.fillStyle = obj.color;
+        ctx.fillText(obj.char, obj.x, obj.y);
+      }
+    }
+
+    // Inicia la animación
+    update();
+  </script>
+</body>
+</html>
