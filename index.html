@@ -2,33 +2,94 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Heart Animation</title>
+  <!-- Etiqueta para diseño responsivo -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animación de Corazones</title>
   <style>
-    /* Quita márgenes y oculta barras de desplazamiento para pantalla completa */
+    /* Estilos generales */
     body {
       margin: 0;
-      overflow: hidden;
-      background: black;
+      background: linear-gradient(45deg, #1e1e1e, #0a0a0a);
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
     }
+    /* Encabezado superior */
+    header {
+      padding: 20px;
+      background-color: #ff69b4;
+      font-size: 2em;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    }
+    /* Contenedor de la animación */
+    #animation-container {
+      position: relative;
+      overflow: hidden;
+    }
+    /* El canvas se adapta al ancho del contenedor */
     canvas {
       display: block;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 1200px;
+      height: auto;
+      background: black; /* Por si el redimensionado deja áreas sin dibujar */
+    }
+    /* Sección de frases o poemas */
+    #poems {
+      padding: 20px;
+      font-size: 1.2em;
+      line-height: 1.6;
+    }
+    /* Media queries para dispositivos móviles */
+    @media (max-width: 600px) {
+      header {
+        font-size: 1.5em;
+      }
+      #poems {
+        font-size: 1em;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Definimos un canvas de 1200x700 (igual que la geometría de tu ventana tkinter) -->
-  <canvas id="canvas" width="1200" height="700"></canvas>
+  <!-- Encabezado con el mensaje -->
+  <header>
+    TE AMO MILKA <span>😍🥰😘</span>
+  </header>
+
+  <!-- Contenedor de la animación -->
+  <div id="animation-container">
+    <!-- Canvas de la animación -->
+    <canvas id="canvas" width="1200" height="700"></canvas>
+  </div>
+
+  <!-- Sección de frases o poemas -->
+  <div id="poems">
+    <p>"En cada latido, mi corazón susurra tu nombre..."</p>
+    <p>"Tus ojos son estrellas que iluminan mi noche..."</p>
+    <p>"El amor es un viaje sin destino, pero contigo, cada paso es poesía."</p>
+  </div>
 
   <script>
-    // Obtiene el canvas y su contexto de dibujo 2D
+    // Obtiene el canvas y el contexto 2D
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
-    // Arreglo de 200 "objetos" con posición inicial
+    // Función para adaptar el canvas al ancho del contenedor (responsividad)
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = 700; // Puedes ajustar el alto si lo deseas
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Creamos un arreglo de 200 objetos con posición inicial
     const totalObjects = 200;
     const objects = [];
     for (let i = 0; i < totalObjects; i++) {
-      // Inicialmente los objetos se ubican en (500, 250)
+      // Inicialmente, los objetos se posicionan en (500, 250) (estos valores se reubicarán al reiniciar)
       objects.push({ x: 500, y: 250, color: "#fff", char: '☆' });
     }
 
@@ -37,45 +98,46 @@
     let currentChar = '☆';
     const chars = ['➤', '♥', '☆', '◉', '➹', '☼', '❋', '☺', '♪'];
 
-    // Función que actualiza la animación cada 100 ms
-    function update() {
-      // Se realizan 200 actualizaciones (una por objeto, en orden)
-      for (let t = 0; t < totalObjects; t++) {
-        // Calcula el desplazamiento usando las fórmulas de la “corazón”
-        const xp = -1 * Math.floor(16 * Math.pow(Math.sin(t), 3));
-        const yp = -1 * Math.floor(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+    // Usamos requestAnimationFrame para una animación más fluida
+    let lastUpdateTime = 0;
+    function update(timestamp) {
+      if (!lastUpdateTime) lastUpdateTime = timestamp;
+      const delta = timestamp - lastUpdateTime;
+      if (delta > 100) { // Actualizamos aproximadamente cada 100ms
+        for (let t = 0; t < totalObjects; t++) {
+          // Calcula el desplazamiento usando fórmulas que generan la forma de un "corazón"
+          const xp = -Math.floor(16 * Math.pow(Math.sin(t), 3));
+          const yp = -Math.floor(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+          
+          // Genera un color aleatorio con componentes rojo y azul (verde en 0)
+          const r = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
+          const b = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
+          const color = `rgb(${r},0,${b})`;
 
-        // Genera un color aleatorio con rojo y azul entre 100 y 255, y verde en 0
-        const r = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
-        const b = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
-        const color = `rgb(${r},0,${b})`;
+          // Actualiza el objeto actual sumando el desplazamiento
+          objects[num].x += xp;
+          objects[num].y += yp;
+          objects[num].color = color;
+          objects[num].char = currentChar;
 
-        // Actualiza el objeto actual (se le suma el desplazamiento)
-        objects[num].x += xp;
-        objects[num].y += yp;
-        objects[num].color = color;
-        objects[num].char = currentChar;
-
-        // Si la posición X del objeto supera 800, se reinician todos los objetos
-        if (objects[num].x >= 800) {
-          // Cambia el carácter actual aleatoriamente de la lista
-          currentChar = chars[Math.floor(Math.random() * chars.length)];
-          // Reinicia la posición de todos los objetos a (520, 270)
-          for (let s = 0; s < totalObjects; s++) {
-            objects[s].x = 520;
-            objects[s].y = 270;
+          // Si la posición X supera un cierto porcentaje del ancho del canvas, reinicia las posiciones
+          if (objects[num].x >= canvas.width * 0.66) {
+            // Cambia el carácter actual aleatoriamente
+            currentChar = chars[Math.floor(Math.random() * chars.length)];
+            // Reinicia la posición de todos los objetos (aproximadamente centrados)
+            for (let s = 0; s < totalObjects; s++) {
+              objects[s].x = canvas.width * 0.433;
+              objects[s].y = canvas.height * 0.386;
+            }
           }
+
+          // Pasa al siguiente objeto (ciclo circular)
+          num = (num + 1) % totalObjects;
         }
-
-        // Pasa al siguiente objeto (ciclo circular)
-        num = (num + 1) % totalObjects;
+        lastUpdateTime = timestamp;
       }
-
-      // Redibuja el canvas
       drawObjects();
-
-      // Programa la siguiente actualización dentro de 100 ms
-      setTimeout(update, 100);
+      requestAnimationFrame(update);
     }
 
     // Función para dibujar todos los objetos en el canvas
@@ -83,12 +145,14 @@
       // Limpia el canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Dibuja el fondo negro
+      // Dibuja un fondo negro
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Configura la fuente para el texto
+      // Configura la fuente y añade una sombra para mayor dinamismo
       ctx.font = "24px Arial";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 4;
 
       // Dibuja cada objeto (texto) en su posición, con su color y carácter
       for (let i = 0; i < totalObjects; i++) {
@@ -99,7 +163,7 @@
     }
 
     // Inicia la animación
-    update();
+    requestAnimationFrame(update);
   </script>
 </body>
 </html>
