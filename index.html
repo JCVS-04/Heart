@@ -105,7 +105,11 @@
     function update(timestamp) {
       if (!lastUpdateTime) lastUpdateTime = timestamp;
       const delta = timestamp - lastUpdateTime;
-      if (delta > 100) { // Actualiza cada ~100 ms
+      // Define un intervalo de actualización que depende del ancho del canvas:
+      // Si es un smartphone (ancho menor a 600), actualiza cada 200ms; de lo contrario, cada 100ms.
+      const updateInterval = canvas.width < 600 ? 200 : 100;
+      
+      if (delta > updateInterval) { // Actualiza según el intervalo definido
         for (let t = 0; t < totalObjects; t++) {
           // Calcula el desplazamiento según la “forma de corazón”
           const xp = -Math.floor(16 * Math.pow(Math.sin(t), 3));
