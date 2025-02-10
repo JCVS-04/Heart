@@ -2,22 +2,22 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <!-- Etiqueta para diseño responsivo -->
+  <!-- Configuración para dispositivos móviles -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Animación de Corazones</title>
   <style>
     /* Estilos generales */
     body {
       margin: 0;
+      font-family: Arial, sans-serif;
       background: linear-gradient(45deg, #1e1e1e, #0a0a0a);
-      color: #fff;
-      font-family: 'Arial', sans-serif;
+      color: white;
       text-align: center;
     }
-    /* Encabezado superior */
+    /* Encabezado con el mensaje */
     header {
-      padding: 20px;
       background-color: #ff69b4;
+      padding: 10px;
       font-size: 2em;
       font-weight: bold;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
@@ -27,22 +27,19 @@
       position: relative;
       overflow: hidden;
     }
-    /* El canvas se adapta al ancho del contenedor */
+    /* Canvas responsivo */
     canvas {
       display: block;
       margin: 0 auto;
-      width: 100%;
-      max-width: 1200px;
-      height: auto;
-      background: black; /* Por si el redimensionado deja áreas sin dibujar */
+      background: black;
     }
     /* Sección de frases o poemas */
     #poems {
       padding: 20px;
       font-size: 1.2em;
-      line-height: 1.6;
+      line-height: 1.5;
     }
-    /* Media queries para dispositivos móviles */
+    /* Ajustes para pantallas pequeñas */
     @media (max-width: 600px) {
       header {
         font-size: 1.5em;
@@ -54,15 +51,14 @@
   </style>
 </head>
 <body>
-  <!-- Encabezado con el mensaje -->
+  <!-- Encabezado -->
   <header>
     TE AMO MILKA <span>😍🥰😘</span>
   </header>
 
   <!-- Contenedor de la animación -->
   <div id="animation-container">
-    <!-- Canvas de la animación -->
-    <canvas id="canvas" width="1200" height="700"></canvas>
+    <canvas id="canvas"></canvas>
   </div>
 
   <!-- Sección de frases o poemas -->
@@ -73,27 +69,33 @@
   </div>
 
   <script>
-    // Obtiene el canvas y el contexto 2D
+    // Obtiene el canvas y su contexto
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
 
-    // Función para adaptar el canvas al ancho del contenedor (responsividad)
+    // Función para adaptar el tamaño del canvas según el ancho del contenedor
     function resizeCanvas() {
       canvas.width = canvas.parentElement.clientWidth;
-      canvas.height = 700; // Puedes ajustar el alto si lo deseas
+      // Si el ancho es pequeño (smartphone), usamos una altura menor
+      if (canvas.width < 600) {
+        canvas.height = 300;
+      } else {
+        canvas.height = 700;
+      }
     }
+    // Ajusta el canvas al cargar y al cambiar el tamaño de la ventana
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener("resize", resizeCanvas);
 
-    // Creamos un arreglo de 200 objetos con posición inicial
+    // Creamos un arreglo de 200 objetos
     const totalObjects = 200;
     const objects = [];
     for (let i = 0; i < totalObjects; i++) {
-      // Inicialmente, los objetos se posicionan en (500, 250) (estos valores se reubicarán al reiniciar)
+      // Posición inicial (estos valores se reajustan luego)
       objects.push({ x: 500, y: 250, color: "#fff", char: '☆' });
     }
 
-    // Variables para controlar el objeto actual y el carácter que se muestra
+    // Variables para controlar la animación y los caracteres
     let num = 0;
     let currentChar = '☆';
     const chars = ['➤', '♥', '☆', '◉', '➹', '☼', '❋', '☺', '♪'];
@@ -103,35 +105,34 @@
     function update(timestamp) {
       if (!lastUpdateTime) lastUpdateTime = timestamp;
       const delta = timestamp - lastUpdateTime;
-      if (delta > 100) { // Actualizamos aproximadamente cada 100ms
+      if (delta > 100) { // Actualiza cada ~100 ms
         for (let t = 0; t < totalObjects; t++) {
-          // Calcula el desplazamiento usando fórmulas que generan la forma de un "corazón"
+          // Calcula el desplazamiento según la “forma de corazón”
           const xp = -Math.floor(16 * Math.pow(Math.sin(t), 3));
           const yp = -Math.floor(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-          
-          // Genera un color aleatorio con componentes rojo y azul (verde en 0)
+
+          // Genera un color aleatorio (rojo y azul entre 100 y 255; verde en 0)
           const r = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
           const b = Math.floor(Math.random() * (255 - 100 + 1)) + 100;
           const color = `rgb(${r},0,${b})`;
 
-          // Actualiza el objeto actual sumando el desplazamiento
+          // Actualiza el objeto actual
           objects[num].x += xp;
           objects[num].y += yp;
           objects[num].color = color;
           objects[num].char = currentChar;
 
-          // Si la posición X supera un cierto porcentaje del ancho del canvas, reinicia las posiciones
+          // Si la posición X supera el 66% del ancho del canvas, reinicia todos los objetos
           if (objects[num].x >= canvas.width * 0.66) {
-            // Cambia el carácter actual aleatoriamente
+            // Cambia aleatoriamente el carácter
             currentChar = chars[Math.floor(Math.random() * chars.length)];
-            // Reinicia la posición de todos los objetos (aproximadamente centrados)
+            // Reinicia la posición (centrado aproximadamente)
             for (let s = 0; s < totalObjects; s++) {
               objects[s].x = canvas.width * 0.433;
               objects[s].y = canvas.height * 0.386;
             }
           }
-
-          // Pasa al siguiente objeto (ciclo circular)
+          // Avanza al siguiente objeto (ciclo circular)
           num = (num + 1) % totalObjects;
         }
         lastUpdateTime = timestamp;
@@ -142,19 +143,17 @@
 
     // Función para dibujar todos los objetos en el canvas
     function drawObjects() {
-      // Limpia el canvas
+      // Limpia y dibuja el fondo negro
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Dibuja un fondo negro
       ctx.fillStyle = "black";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Configura la fuente y añade una sombra para mayor dinamismo
+      // Configura la fuente y sombra para el texto
       ctx.font = "24px Arial";
       ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
       ctx.shadowBlur = 4;
 
-      // Dibuja cada objeto (texto) en su posición, con su color y carácter
+      // Dibuja cada objeto (texto)
       for (let i = 0; i < totalObjects; i++) {
         const obj = objects[i];
         ctx.fillStyle = obj.color;
